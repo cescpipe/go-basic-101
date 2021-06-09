@@ -1,0 +1,14 @@
+time_zone: "Asia/Bangkok"
+
+mongodb:
+  mongo_uri: "mongodb+srv://%s:%s@cluster0.5m0mj.mongodb.net/%s?retryWrites=true&w=majority"
+  timeout: "5s"
+  username: "teerapat"
+  password: "HDrLv7gRVMJ8BJaX"
+  database: "sample_employee"
+
+http_config:
+  max_idle_connections: 100
+  max_connections_per_host: 100
+  max_idle_connections_per_host: 100
+  time_out: 30
