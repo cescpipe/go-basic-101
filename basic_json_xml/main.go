@@ -1,10 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"github.com/shopspring/decimal"
+	"io/ioutil"
+	"net/http"
+	"time"
 )
 
 type people struct {
@@ -55,4 +59,82 @@ func main() {
 	}
 
 	fmt.Printf("XML %+v", p2)
+
+	fmt.Println("START CALL HTTP GET")
+
+	type commentStruct struct {
+		PostId int    `json:"postId"`
+		ID     int    `json:"id"`
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+		Body   string `json:"body"`
+	}
+
+	tr := &http.Transport{
+		MaxIdleConns:       10,
+		IdleConnTimeout:    30 * time.Second,
+		DisableCompression: true,
+	}
+
+	client := &http.Client{Transport: tr}
+	resp, err := client.Get("https://jsonplaceholder.typicode.com/comments")
+	if err != nil {
+		fmt.Println("error call https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("error read  https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	var csGet []commentStruct
+
+	if err := json.Unmarshal(body, &csGet); err != nil {
+		fmt.Println("error unmarshall https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	fmt.Printf("%#v : ", csGet)
+	fmt.Println("END CALL HTTP GET")
+
+	fmt.Println("START CALL HTTP POST ")
+
+	var inputData struct {
+		UserId int `json:"userId"`
+	}
+
+	idb, err := json.Marshal(inputData)
+	if err != nil {
+		fmt.Println("error json marshall https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	resp2, err := client.Post("https://jsonplaceholder.typicode.com/comments", "application/json", bytes.NewBuffer(idb))
+	if err != nil {
+		fmt.Println("error call https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	defer resp2.Body.Close()
+
+	body2, err := ioutil.ReadAll(resp2.Body)
+	if err != nil {
+		fmt.Println("error read  https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	var csPost commentStruct
+
+	if err := json.Unmarshal(body2, &csPost); err != nil {
+		fmt.Println("error unmarshall https://jsonplaceholder.typicode.com/comments : ", err)
+		return
+	}
+
+	fmt.Printf("%#v : ", csPost)
+	fmt.Println("END CALL HTTP POST")
+
 }
