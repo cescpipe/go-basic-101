@@ -128,7 +128,7 @@ func main() {
 	defer resp2.Body.Close()
 
 	var csPost commentStruct
-	if err := json.NewDecoder(resp.Body).Decode(&csPost); err != nil {
+	if err := json.NewDecoder(resp2.Body).Decode(&csPost); err != nil {
 		fmt.Println("error unmarshall https://jsonplaceholder.typicode.com/comments : ", err)
 		return
 	}
