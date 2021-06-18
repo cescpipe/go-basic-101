@@ -6,7 +6,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"github.com/shopspring/decimal"
-	"io/ioutil"
 	"net/http"
 	"time"
 )
@@ -76,8 +75,14 @@ func main() {
 		DisableCompression: true,
 	}
 
+	httpReq, err := http.NewRequest(http.MethodGet, "https://jsonplaceholder.typicode.com/comments", nil)
+	if err != nil {
+		fmt.Println("error json unmarshall : ", err)
+		return
+	}
 	client := &http.Client{Transport: tr}
-	resp, err := client.Get("https://jsonplaceholder.typicode.com/comments")
+
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		fmt.Println("error call https://jsonplaceholder.typicode.com/comments : ", err)
 		return
@@ -85,15 +90,8 @@ func main() {
 
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("error read  https://jsonplaceholder.typicode.com/comments : ", err)
-		return
-	}
-
 	var csGet []commentStruct
-
-	if err := json.Unmarshal(body, &csGet); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&csGet); err != nil {
 		fmt.Println("error unmarshall https://jsonplaceholder.typicode.com/comments : ", err)
 		return
 	}
@@ -113,7 +111,15 @@ func main() {
 		return
 	}
 
-	resp2, err := client.Post("https://jsonplaceholder.typicode.com/comments", "application/json", bytes.NewBuffer(idb))
+	httpReq, err = http.NewRequest(http.MethodPost, "https://jsonplaceholder.typicode.com/comments", bytes.NewBuffer(idb))
+
+	if err != nil {
+		fmt.Println("error json unmarshall : ", err)
+		return
+	}
+
+	httpReq.Header.Add("Content-Type", "application/json")
+	resp2, err := client.Do(httpReq)
 	if err != nil {
 		fmt.Println("error call https://jsonplaceholder.typicode.com/comments : ", err)
 		return
@@ -121,15 +127,8 @@ func main() {
 
 	defer resp2.Body.Close()
 
-	body2, err := ioutil.ReadAll(resp2.Body)
-	if err != nil {
-		fmt.Println("error read  https://jsonplaceholder.typicode.com/comments : ", err)
-		return
-	}
-
 	var csPost commentStruct
-
-	if err := json.Unmarshal(body2, &csPost); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&csPost); err != nil {
 		fmt.Println("error unmarshall https://jsonplaceholder.typicode.com/comments : ", err)
 		return
 	}
